@@ -1,0 +1,570 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+/* Login page */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(102,126,234,0.06), rgba(118,75,162,0.04));
+}
+.login-card {
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  padding: 28px;
+  border-radius: 14px;
+  width: 380px;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid rgba(99,102,241,0.06);
+}
+.login-brand {
+  display:flex; align-items:center; gap:12px; margin-bottom:6px;
+}
+.login-logo { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; background: linear-gradient(90deg,#667eea,#764ba2); color:#fff; font-size:22px }
+.login-title { font-size:18px; font-weight:700; color:#0f172a }
+.login-sub { font-size:13px; color:#475569 }
+.login-card h2 { margin: 0 0 6px 0; }
+.login-card label { display:block; font-size: 14px; color:#334155; }
+.login-card input { width:100%; padding:10px 12px; margin-top:6px; border:1px solid #e6eefb; border-radius:8px }
+.login-card .error { color:#b91c1c; font-size:13px; }
+.login-card button { margin-top:6px; padding:12px; border-radius:10px; border: none; background:#4f46e5; color:#fff; font-weight:700 }
+
+/* Header improvements */
+.header {
+  background: white;
+  border-radius: 12px;
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.header-left { display:flex; flex-direction:column }
+.header h1 { font-size:26px; margin-bottom:4px }
+.header p { margin:0; color:#64748b }
+.header-actions { display:flex; gap:12px; align-items:center }
+.user-badge { font-size:14px; color:#0f172a; opacity:0.9 }
+.header-actions .btn { padding:8px 12px; border-radius:8px }
+
+/* Money card (inspired) */
+.money-card {
+  background: linear-gradient(90deg, #ff8a00 0%, #ff5e62 100%);
+  color: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 12px 30px rgba(15,23,42,0.12);
+}
+.money-top { display:flex; justify-content:space-between; align-items:center }
+.money-balance { font-weight:700; font-size:20px; letter-spacing:2px }
+.money-meta { font-size:13px; opacity:0.95 }
+.money-account { font-size:18px; font-weight:600; margin-top:8px }
+.money-actions { display:flex; gap:10px; align-items:center }
+.icon-circle { width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center }
+
+/* Action tiles grid */
+.action-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; margin-top:18px }
+.action-tile { background: #fff; border-radius:14px; padding:18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; box-shadow: 0 8px 20px rgba(2,6,23,0.06); text-align:center; color:#0f172a }
+.action-tile .tile-icon { width:46px; height:46px; border-radius:10px; background:#ffedd5; display:flex; align-items:center; justify-content:center; color:#c2410c }
+.action-tile small { color:#6b7280 }
+
+@media (max-width: 640px) {
+  .action-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: #667eea;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.btn-secondary:hover {
+  background: #cbd5e1;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #059669;
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #334155;
+  font-size: 14px;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal h2 {
+  margin-bottom: 24px;
+  color: #1e293b;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+  margin-bottom: 36px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.stat-content h3 {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.stat-content p {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* Ensure charts and icons align when stacked */
+.stat-card .chart-container, .stat-card canvas { display: block; margin: 0 auto; }
+
+@media (max-width: 640px) {
+  .stat-content p { font-size: 22px; }
+  .stats-grid { gap: 20px; }
+}
+
+.expense-list {
+  list-style: none;
+}
+
+.expense-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  transition: background 0.2s ease;
+}
+
+.expense-item:hover {
+  background: #f8fafc;
+}
+
+.expense-item:last-child {
+  border-bottom: none;
+}
+
+.expense-info {
+  flex: 1;
+}
+
+.expense-info h4 {
+  font-size: 16px;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.expense-info p {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.expense-amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ef4444;
+  margin-right: 16px;
+}
+
+.expense-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: #f1f5f9;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+  background: #e2e8f0;
+  transform: scale(1.1);
+}
+
+.category-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+/* Prêts - styles compacts */
+.loan-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.loan-item {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e6eefb;
+  display: block;
+}
+
+.loan-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.loan-info {
+  flex: 1;
+}
+
+.loan-title {
+  display: block;
+  font-size: 15px;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.loan-meta {
+  font-size: 13px;
+  color: #475569;
+  margin-top: 2px;
+}
+
+.loan-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Petits boutons pour actions sur les prêts */
+.btn-sm {
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+/* Adaptation mobile - garder compact */
+@media (max-width: 640px) {
+  .loan-main { flex-direction: column; align-items: flex-start; }
+  .loan-actions { margin-top: 8px; }
+}
+
+.header {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+  font-size: 32px;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.header p {
+  color: #64748b;
+  font-size: 16px;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filters select {
+  padding: 10px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.stat-card select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+/* Carte épargne */
+.savings-card {
+  background: white;
+  border: 1px solid #e6f5d6;
+  padding: 16px;
+}
+
+.savings-rate-btn {
+  padding: 6px 8px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.toggle-switch input { display: none; }
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #cbd5e1;
+  transition: .2s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  top: 2px;
+  background-color: white;
+  transition: .2s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider { background-color: #10b981; }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+.savings-card .btn-sm { margin-left: 0; }
+
+/* Savings layout compact */
+.savings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; position: relative; }
+.savings-left { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.savings-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex: 0 0 44px; }
+.savings-info { min-width: 0; }
+.savings-info .savings-title { margin: 0 0 4px 0; font-size: 13px; color: #0f172a; }
+.savings-amount { font-weight: 700; font-size: 16px; color: #065f46; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.savings-sub { font-size: 12px; color: #475569; margin-top: 4px; }
+.savings-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 0; }
+.savings-controls { display: flex; gap: 8px; align-items: center; max-width: 160px; }
+.savings-rate button { min-width: 56px; }
+.savings-status { font-size: 13px; color: #475569; }
+.savings-actions { margin-top: 4px; }
+
+.savings-content { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.savings-content .savings-amount { font-size: 18px; }
+.savings-content .savings-controls { max-width: none; }
+
+/* place toggle top-right small */
+.savings-row .savings-toggle { position: static; }
+.savings-row .savings-toggle .savings-status { display: inline-block; }
+
+/* make CTA smaller and inline */
+.savings-actions .btn-sm { padding: 6px 8px; font-size: 12px; }
+
+@media (max-width: 900px) {
+  .savings-row { gap: 8px; }
+}
+
+@media (max-width: 640px) {
+  .savings-row { flex-direction: column; align-items: stretch; }
+  .savings-right { align-items: flex-start; }
+  .savings-controls { max-width: none; }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+}
+
+.empty-state svg {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: #334155;
+}
+
+.empty-state p {
+  font-size: 14px;
+}
