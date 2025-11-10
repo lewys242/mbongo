@@ -61,7 +61,7 @@ code {
   background: white;
   border-radius: 12px;
   padding: 18px 24px;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
   box-shadow: 0 6px 18px rgba(15,23,42,0.06);
   display:flex;
   align-items:center;
@@ -107,7 +107,7 @@ code {
   border-radius: 12px;
   padding: 28px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 24px;
+  margin-bottom: 30px;
 }
 
 .btn {
@@ -244,7 +244,7 @@ code {
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 32px;
+  gap: 20px;
   margin-bottom: 36px;
 }
 
@@ -368,7 +368,7 @@ code {
   margin-right: 8px;
 }
 
-/* Prêts - styles compacts */
+/* Prêts - style carte comme les revenus */
 .loan-list {
   list-style: none;
   margin: 0;
@@ -376,16 +376,24 @@ code {
 }
 
 .loan-item {
-  padding: 12px 14px;
-  border-bottom: 1px solid #e6eefb;
-  display: block;
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #8b5cf6;
+  transition: box-shadow 0.2s ease;
+}
+
+.loan-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .loan-main {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 16px;
 }
 
 .loan-info {
@@ -394,7 +402,8 @@ code {
 
 .loan-title {
   display: block;
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 600;
   color: #0f172a;
   margin-bottom: 6px;
 }
@@ -409,13 +418,61 @@ code {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 /* Petits boutons pour actions sur les prêts */
 .btn-sm {
-  padding: 6px 10px;
+  padding: 8px 12px;
   font-size: 13px;
-  border-radius: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+}
+
+.btn-sm:hover {
+  transform: scale(1.05);
+}
+
+.loan-actions .btn-sm.edit-btn {
+  color: #6366f1;
+  border-color: #6366f1;
+}
+
+.loan-actions .btn-sm.edit-btn:hover {
+  background-color: #6366f1;
+  color: white;
+}
+
+.loan-actions .btn-sm.delete-btn {
+  color: #ef4444;
+  border-color: #ef4444;
+}
+
+.loan-actions .btn-sm.delete-btn:hover {
+  background-color: #ef4444;
+  color: white;
+}
+
+.loan-actions .btn-sm.repay-btn {
+  background-color: #10b981;
+  color: white;
+  border-color: #10b981;
+  padding: 8px 12px;
+  min-width: auto;
+  font-weight: 500;
+}
+
+.loan-actions .btn-sm.repay-btn:hover {
+  background-color: #059669;
+  border-color: #059669;
 }
 
 /* Adaptation mobile - garder compact */
@@ -469,7 +526,6 @@ code {
 .savings-card {
   background: white;
   border: 1px solid #e6f5d6;
-  padding: 16px;
 }
 
 .savings-rate-btn {

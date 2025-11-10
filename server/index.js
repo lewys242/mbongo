@@ -172,7 +172,7 @@ app.get('/api/stats', (req, res) => {
 
     // Dépenses par catégorie
     const byCategory = database.prepare(`
-      SELECT c.name, c.color, c.icon, COALESCE(SUM(e.amount), 0) as total
+      SELECT c.id, c.name, c.color, c.icon, COALESCE(SUM(e.amount), 0) as total
       FROM categories c
       LEFT JOIN expenses e ON c.id = e.category_id ${dateFilter ? 'AND ' + dateFilter.replace('WHERE ', '') : ''}
       GROUP BY c.id, c.name, c.color, c.icon
@@ -301,9 +301,9 @@ app.get('/api/incomes', (req, res) => {
 // Créer un revenu
 app.post('/api/incomes', (req, res) => {
   try {
-    const { amount, description, month } = req.body;
-    const stmt = database.prepare('INSERT INTO incomes (amount, description, month) VALUES (?, ?, ?)');
-    const result = stmt.run(amount, description || '', month);
+    const { amount, description, date, month } = req.body;
+    const stmt = database.prepare('INSERT INTO incomes (amount, description, date, month) VALUES (?, ?, ?, ?)');
+    const result = stmt.run(amount, description || '', date || null, month);
     
     const income = database.prepare('SELECT * FROM incomes WHERE id = ?').get(result.lastInsertRowid);
     res.json(income);
@@ -315,9 +315,9 @@ app.post('/api/incomes', (req, res) => {
 // Modifier un revenu
 app.put('/api/incomes/:id', (req, res) => {
   try {
-    const { amount, description, month } = req.body;
-    const stmt = database.prepare('UPDATE incomes SET amount = ?, description = ?, month = ? WHERE id = ?');
-    stmt.run(amount, description, month, req.params.id);
+    const { amount, description, date, month } = req.body;
+    const stmt = database.prepare('UPDATE incomes SET amount = ?, description = ?, date = ?, month = ? WHERE id = ?');
+    stmt.run(amount, description, date || null, month, req.params.id);
     
     const income = database.prepare('SELECT * FROM incomes WHERE id = ?').get(req.params.id);
     res.json(income);
@@ -404,22 +404,53 @@ app.get('/api/loans', (req, res) => {
 
     // Pour chaque prêt, calculer remboursé, intérêt, solde et mensualité
     const enriched = loans.map(loan => {
-      const rep = database.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM repayments WHERE loan_id = ?').get(loan.id);
-      const totalRepaid = rep ? Number(rep.total) : 0;
+      // Récupérer les remboursements avec détail intérêts/capital
+      const repaymentData = database.prepare(`
+        SELECT 
+          COALESCE(SUM(amount), 0) as total,
+          COALESCE(SUM(interest_amount), 0) as total_interest_paid,
+          COALESCE(SUM(principal_amount), 0) as total_principal_paid
+        FROM repayments WHERE loan_id = ?
+      `).get(loan.id);
+      
+      const totalRepaid = repaymentData ? Number(repaymentData.total) : 0;
+      const interestPaid = repaymentData ? Number(repaymentData.total_interest_paid) : 0;
+      const principalPaid = repaymentData ? Number(repaymentData.total_principal_paid) : 0;
+      
       const principal = Number(loan.principal) || 0;
       const interestRate = Number(loan.interest_rate) || 0; // en %
       const interestTotal = principal * (interestRate / 100);
       const totalDue = principal + interestTotal;
-      const balance = Math.max(totalDue - totalRepaid, 0);
+      
+      const interestRemaining = Math.max(interestTotal - interestPaid, 0);
+      const principalRemaining = Math.max(principal - principalPaid, 0);
+      const balance = interestRemaining + principalRemaining;
+      
+      // Calcul de la mensualité basée sur le montant restant
       let monthly_payment = null;
       if (loan.term_months && Number(loan.term_months) > 0) {
-        monthly_payment = totalDue / Number(loan.term_months);
+        // Si le prêt n'est pas totalement remboursé, calculer la mensualité sur le restant
+        if (balance > 0) {
+          // Calculer combien de mois il reste (estimation simple)
+          const totalDueOriginal = totalDue;
+          const percentageRepaid = totalDueOriginal > 0 ? totalRepaid / totalDueOriginal : 0;
+          const monthsElapsed = Math.floor(percentageRepaid * Number(loan.term_months));
+          const monthsRemaining = Math.max(Number(loan.term_months) - monthsElapsed, 1);
+          
+          monthly_payment = balance / monthsRemaining;
+        } else {
+          monthly_payment = 0; // Prêt totalement remboursé
+        }
       }
 
       return {
         ...loan,
         total_repaid: totalRepaid,
         interest_total: interestTotal,
+        interest_paid: interestPaid,
+        principal_paid: principalPaid,
+        interest_remaining: interestRemaining,
+        principal_remaining: principalRemaining,
         total_due: totalDue,
         balance: balance,
         monthly_payment: monthly_payment
@@ -432,6 +463,34 @@ app.get('/api/loans', (req, res) => {
   }
 });
 
+// Nouvelle route : Calculer le solde disponible (revenus + prêts reçus - dépenses)
+app.get('/api/balance', (req, res) => {
+  try {
+    // Calculer total des revenus en excluant les revenus marqués comme "Prêt" (ancienne logique)
+    const totalIncomes = database.prepare(
+      "SELECT COALESCE(SUM(amount), 0) as total FROM incomes WHERE COALESCE(LOWER(description), '') NOT LIKE '%prêt%' AND COALESCE(LOWER(description), '') NOT LIKE '%pret%'")
+      .get().total;
+
+    // Pour information seulement : total des prêts reçus
+    const totalLoansReceived = database.prepare('SELECT COALESCE(SUM(principal), 0) as total FROM loans').get().total;
+
+    // Calculer total des dépenses (y compris remboursements qui sont créés comme dépenses)
+    const totalExpenses = database.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM expenses').get().total;
+
+    // Solde disponible = Revenus (excl. prêts) - Dépenses
+    const availableBalance = totalIncomes - totalExpenses;
+
+    res.json({
+      totalIncomes,
+      totalLoansReceived,
+      totalExpenses,
+      availableBalance: Math.max(availableBalance, 0)
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Créer un prêt
 app.post('/api/loans', (req, res) => {
   try {
@@ -439,14 +498,9 @@ app.post('/api/loans', (req, res) => {
     const stmt = database.prepare('INSERT INTO loans (principal, interest_rate, term_months, description) VALUES (?, ?, ?, ?)');
     const result = stmt.run(principal, interest_rate || 0, term_months || null, description || '');
     const loan = database.prepare('SELECT * FROM loans WHERE id = ?').get(result.lastInsertRowid);
-    // Créer automatiquement un revenu pour refléter l'argent reçu du prêt
-    try {
-      const month = new Date().toISOString().slice(0,7); // YYYY-MM
-      const incomeStmt = database.prepare('INSERT INTO incomes (amount, description, month) VALUES (?, ?, ?)');
-      incomeStmt.run(principal, `Prêt: ${description || ''}`.trim(), month);
-    } catch (err) {
-      console.error('Erreur création revenu lié au prêt:', err);
-    }
+    
+    // Un prêt n'est PAS un revenu ! Il augmente le solde disponible mais doit être remboursé.
+    // Pas de création automatique de revenu.
 
     res.json(loan);
   } catch (error) {
@@ -466,23 +520,37 @@ app.get('/api/loans/:id/repayments', (req, res) => {
 
 app.post('/api/loans/:id/repayments', (req, res) => {
   try {
-    const { amount, date } = req.body;
-    const stmt = database.prepare('INSERT INTO repayments (loan_id, amount, date) VALUES (?, ?, ?)');
-    const result = stmt.run(req.params.id, amount, date);
+    const { amount, date, interest_amount = 0, principal_amount = 0 } = req.body;
+    const stmt = database.prepare('INSERT INTO repayments (loan_id, amount, date, interest_amount, principal_amount) VALUES (?, ?, ?, ?, ?)');
+    const result = stmt.run(req.params.id, amount, date, interest_amount, principal_amount);
     const repayment = database.prepare('SELECT * FROM repayments WHERE id = ?').get(result.lastInsertRowid);
-    // Créer également une dépense pour ce remboursement afin qu'il apparaisse dans la liste des dépenses
+    // Créer automatiquement une dépense pour ce remboursement afin qu'il apparaisse dans la liste des dépenses et impacte le solde
     try {
-      // chercher la catégorie 'Prêt' si elle existe
-      let cat = database.prepare("SELECT id FROM categories WHERE name = ? OR name = ? LIMIT 1").get('Prêt', 'Pret');
+      // Chercher ou créer la catégorie 'Remboursement de prêt'
+      let cat = database.prepare("SELECT id FROM categories WHERE name LIKE '%remboursement%' OR name LIKE '%prêt%' OR name LIKE '%pret%' LIMIT 1").get();
       let category_id = cat ? cat.id : null;
+      
       if (!category_id) {
-        const first = database.prepare('SELECT id FROM categories LIMIT 1').get();
-        category_id = first ? first.id : 1;
+        // Créer la catégorie "Remboursement de prêt" si elle n'existe pas
+        try {
+          const createCatStmt = database.prepare('INSERT INTO categories (name, color, icon) VALUES (?, ?, ?)');
+          const catResult = createCatStmt.run('Remboursement de prêt', '#8b5cf6', '💳');
+          category_id = catResult.lastInsertRowid;
+          console.log(`✅ Catégorie "Remboursement de prêt" créée avec l'ID ${category_id}`);
+        } catch (catErr) {
+          console.error('Erreur création catégorie remboursement:', catErr);
+          // Fallback sur la première catégorie disponible
+          const first = database.prepare('SELECT id FROM categories LIMIT 1').get();
+          category_id = first ? first.id : 1;
+        }
       }
+      
+      // Créer la dépense de remboursement
       const expenseStmt = database.prepare('INSERT INTO expenses (amount, category_id, description, date) VALUES (?, ?, ?, ?)');
-      expenseStmt.run(amount, category_id, `Remboursement prêt #${req.params.id}`, date);
+      expenseStmt.run(amount, category_id, `Remboursement prêt: ${amount} FCFA`, date);
+      console.log(`✅ Dépense de remboursement créée: ${amount} FCFA pour le prêt #${req.params.id}`);
     } catch (err) {
-      console.error('Erreur création dépense liée au remboursement:', err);
+      console.error('❌ Erreur création dépense liée au remboursement:', err);
     }
 
     res.json(repayment);
@@ -500,6 +568,17 @@ app.delete('/api/loans/:id', (req, res) => {
     // Supprimer le prêt
     database.prepare('DELETE FROM loans WHERE id = ?').run(loanId);
     res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Nettoyer les anciens revenus créés automatiquement pour des prêts (utilitaire)
+app.post('/api/cleanup-loan-incomes', (req, res) => {
+  try {
+    const stmt = database.prepare("DELETE FROM incomes WHERE COALESCE(LOWER(description), '') LIKE '%prêt%' OR COALESCE(LOWER(description), '') LIKE '%pret%'");
+    const result = stmt.run();
+    res.json({ deleted: result.changes || 0 });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

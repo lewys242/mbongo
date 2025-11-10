@@ -143,13 +143,72 @@ const initDatabase = async () => {
   const count = prepare('SELECT COUNT(*) as count FROM categories').get();
   if (!count || count.count === 0) {
     const categories = [
+      // Catégories essentielles
       ['Alimentation', '#10b981', '🍔'],
       ['Transport', '#3b82f6', '🚗'],
       ['Logement', '#8b5cf6', '🏠'],
-      ['Loisirs', '#f59e0b', '🎮'],
       ['Santé', '#ef4444', '💊'],
+      
+      // Transport et véhicule
+      ['Carburant', '#f97316', '⛽'],
+      ['Vidange', '#84cc16', '🔧'],
+      ['Assurance véhicule', '#06b6d4', '🚙'],
+      ['Réparation auto', '#dc2626', '🔩'],
+      ['Parking/Péage', '#7c3aed', '🅿️'],
+      
+      // Vie sociale et familiale
+      ['Partage/Aide famille', '#f59e0b', '🤝'],
+      ['Marché/Courses', '#22c55e', '🛒'],
+      ['Restaurant/Maquis', '#ef4444', '🍽️'],
+      ['Cadeaux', '#ec4899', '🎁'],
+      ['Cérémonies', '#8b5cf6', '🎊'],
+      
+      // Services et communication
+      ['Téléphone/Internet', '#06b6d4', '📱'],
+      ['Électricité', '#fbbf24', '⚡'],
+      ['Eau', '#3b82f6', '💧'],
+      ['Gaz', '#f97316', '🔥'],
+      ['Poubelle/Assainissement', '#6b7280', '🗑️'],
+      
+      // Apparence et soins
+      ['Coiffure/Esthétique', '#ec4899', '�'],
+      ['Vêtements', '#8b5cf6', '👕'],
+      ['Chaussures', '#6b7280', '👞'],
+      ['Produits beauté', '#f59e0b', '💄'],
+      
+      // Éducation et développement
+      ['Éducation/Formation', '#06b6d4', '📚'],
+      ['Internet/Data', '#3b82f6', '📶'],
+      ['Livres/Journaux', '#059669', '📰'],
+      
+      // Loisirs et divertissement
+      ['Loisirs/Sorties', '#f59e0b', '🎮'],
+      ['Sport/Gym', '#22c55e', '⚽'],
+      ['Cinéma/Spectacles', '#8b5cf6', '🎬'],
+      ['Voyage/Vacances', '#06b6d4', '✈️'],
+      
+      // Santé et bien-être
+      ['Médicaments', '#ef4444', '💊'],
+      ['Consultation médicale', '#f97316', '🏥'],
+      ['Pharmacie', '#22c55e', '💉'],
+      
+      // Charges professionnelles
+      ['Frais professionnels', '#6b7280', '💼'],
+      ['Déjeuner bureau', '#f59e0b', '🥪'],
+      ['Transport travail', '#3b82f6', '🚌'],
+      
+      // Épargne et investissement
+      ['Épargne', '#22c55e', '💰'],
+      ['Investissement', '#8b5cf6', '📈'],
+      ['Assurance vie', '#6b7280', '🛡️'],
+      
+      // Remboursements et crédits
+      ['Remboursement de prêt', '#ef4444', '💳'],
+      ['Crédit/Emprunt', '#dc2626', '🏦'],
+      
+      // Divers
       ['Shopping', '#ec4899', '🛍️'],
-      ['Éducation', '#06b6d4', '📚'],
+      ['Urgences/Imprévus', '#ef4444', '🚨'],
       ['Autres', '#6b7280', '📦']
     ];
     
