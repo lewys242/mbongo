@@ -280,11 +280,16 @@ app.delete('/api/budgets/:id', (req, res) => {
 // Récupérer les revenus
 app.get('/api/incomes', (req, res) => {
   try {
-    const { month } = req.query;
+    const { month, year } = req.query;
     let query = 'SELECT * FROM incomes';
     const params = [];
 
-    if (month) {
+    if (month && year) {
+      // Format: YYYY-MM
+      query += ' WHERE month = ?';
+      params.push(`${year}-${month.toString().padStart(2, '0')}`);
+    } else if (month) {
+      // Support old format for compatibility
       query += ' WHERE month = ?';
       params.push(month);
     }
@@ -340,11 +345,16 @@ app.delete('/api/incomes/:id', (req, res) => {
 // Total des revenus pour une période
 app.get('/api/incomes/total', (req, res) => {
   try {
-    const { month } = req.query;
+    const { month, year } = req.query;
     let query = 'SELECT COALESCE(SUM(amount), 0) as total FROM incomes';
     const params = [];
 
-    if (month) {
+    if (month && year) {
+      // Format: YYYY-MM
+      query += ' WHERE month = ?';
+      params.push(`${year}-${month.toString().padStart(2, '0')}`);
+    } else if (month) {
+      // Support old format for compatibility
       query += ' WHERE month = ?';
       params.push(month);
     }
