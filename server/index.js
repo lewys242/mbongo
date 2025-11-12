@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const database = require('./database');
+const database = require('./database-better');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,20 +12,6 @@ app.use(bodyParser.json());
 
 // Attendre que la DB soit prête
 let dbReady = false;
-database.ready().then(() => {
-  dbReady = true;
-  console.log('✅ Base de données initialisée');
-}).catch(err => {
-  console.error('❌ Erreur initialisation DB:', err);
-});
-
-// Middleware pour vérifier que la DB est prête
-app.use((req, res, next) => {
-  if (!dbReady) {
-    return res.status(503).json({ error: 'Database not ready' });
-  }
-  next();
-});
 
 // ============ ROUTES CATÉGORIES ============
 
@@ -585,19 +571,41 @@ app.post('/api/cleanup-loan-incomes', (req, res) => {
 });
 
 // Démarrer le serveur avec gestion d'erreurs propre
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-  console.log(`📊 API disponible sur http://localhost:${PORT}/api`);
-});
+async function startServer() {
+  try {
+    await database.ready();
+    dbReady = true;
+    console.log('✅ Base de données initialisée');
+    
+    const server = app.listen(PORT, () => {
+      console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
+      console.log(`📊 API disponible sur http://localhost:${PORT}/api`);
+    });
 
-server.on('error', (err) => {
-  if (err && err.code === 'EADDRINUSE') {
-    console.error(`❌ Le port ${PORT} est déjà utilisé. Arrête le processus qui l'occupe ou démarre le serveur sur un autre port.`);
-    console.error(`Tu peux tuer le processus qui écoute sur le port ${PORT} (PowerShell) :`);
-    console.error(`  netstat -ano | Select-String ':${PORT}'  # trouver le PID\n  taskkill /PID <PID> /F`);
-    console.error(`Ou utiliser npx kill-port ${PORT} puis relancer le serveur.`);
+    server.on('error', (err) => {
+      if (err && err.code === 'EADDRINUSE') {
+        console.error(`❌ Le port ${PORT} est déjà utilisé. Arrête le processus qui l'occupe ou démarre le serveur sur un autre port.`);
+        console.error(`Tu peux tuer le processus qui écoute sur le port ${PORT} (PowerShell) :`);
+        console.error(`  netstat -ano | Select-String ':${PORT}'  # trouver le PID\n  taskkill /PID <PID> /F`);
+        console.error(`Ou utiliser npx kill-port ${PORT} puis relancer le serveur.`);
+        process.exit(1);
+      }
+      console.error('Erreur serveur :', err);
+      process.exit(1);
+    });
+  } catch (err) {
+    console.error('❌ Erreur initialisation DB:', err);
     process.exit(1);
   }
-  console.error('Erreur serveur :', err);
-  process.exit(1);
+}
+
+// Middleware pour vérifier que la DB est prête
+app.use((req, res, next) => {
+  if (!dbReady) {
+    return res.status(503).json({ error: 'Database not ready' });
+  }
+  next();
 });
+
+// Démarrer le serveur
+startServer();

@@ -64,7 +64,7 @@ function App() {
   const [incomeStats, setIncomeStats] = useState({ total: 0, count: 0, bySource: [] });
 
   // Account / balance visibility
-  const [showBalance, setShowBalance] = useState(false); // masqué par défaut
+  const [showBalance, setShowBalance] = useState(true); // visible par défaut
 
   // Épargne
   const [savingsRate, setSavingsRate] = useState(() => {
@@ -817,11 +817,14 @@ function App() {
 
   const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
 
+  // Si l'utilisateur n'est pas connecté, afficher seulement la page de login
+  if (!user) {
+    const Login = require('./Login').default;
+    return <Login onLogin={handleLogin} />;
+  }
+
   return (
     <div className="container">
-      {/* If not authenticated, show Login */}
-      {!user ? (() => { const Login = require('./Login').default; return <Login onLogin={handleLogin} />; })() : null}
-
       {/* Header */}
       <div className="header">
         <div className="header-left">
