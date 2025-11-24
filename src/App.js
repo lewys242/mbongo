@@ -64,7 +64,7 @@ function App() {
   const [incomeStats, setIncomeStats] = useState({ total: 0, count: 0, bySource: [] });
 
   // Account / balance visibility
-  const [showBalance, setShowBalance] = useState(false); // masqué par défaut
+  const [showBalance, setShowBalance] = useState(true); // visible par défaut
 
   // Épargne
   const [savingsRate, setSavingsRate] = useState(() => {
@@ -885,18 +885,18 @@ function App() {
                     justifyContent: 'space-between', 
                     alignItems: 'center', 
                     padding: '12px', 
-                    border: '1px solid #d4af37', 
+                    border: '1px solid #e0e0e0', 
                     borderRadius: '8px', 
                     marginBottom: '8px',
-                    background: '#2a2a2a'
+                    background: '#f8f9fa'
                   }}>
                     <div>
-                      <strong style={{ color: '#d4af37' }}>{formatCurrency(income.amount)}</strong>
+                      <strong>{formatCurrency(income.amount)}</strong>
                       {income.description && (
-                        <div style={{ fontSize: '0.9em', color: '#ffffff' }}>{income.description}</div>
+                        <div style={{ fontSize: '0.9em', color: '#666' }}>{income.description}</div>
                       )}
                       {income.date && (
-                        <div style={{ fontSize: '0.8em', color: '#cccccc', marginTop: '4px' }}>
+                        <div style={{ fontSize: '0.8em', color: '#888', marginTop: '4px' }}>
                           📅 {new Date(income.date).toLocaleDateString('fr-FR')}
                         </div>
                       )}
@@ -914,11 +914,9 @@ function App() {
                 <div style={{ 
                   marginTop: '16px', 
                   padding: '12px', 
-                  background: '#2a2a2a', 
-                  border: '1px solid #d4af37',
+                  background: '#e8f5e8', 
                   borderRadius: '8px', 
-                  fontWeight: 'bold',
-                  color: '#d4af37'
+                  fontWeight: 'bold' 
                 }}>
                   Total des revenus du mois: {formatCurrency(incomes.reduce((total, income) => total + Number(income.amount), 0))}
                 </div>
@@ -1011,7 +1009,7 @@ function App() {
       {/* Statistiques */}
       <div className="stats-grid" style={{ marginBottom: '30px' }}>
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#1a1a1a', color: '#ef4444', border: '1px solid #ef4444' }}>
+          <div className="stat-icon" style={{ background: '#fee2e2', color: '#ef4444' }}>
             <TrendingDown size={28} />
           </div>
           <div className="stat-content">
@@ -1035,7 +1033,7 @@ function App() {
 
         {/* Alerte si dépenses > revenus */}
         {getTotalIncome() > 0 && (globalStats.total > getTotalIncome()) && (
-          <div className="stat-card" style={{ background: '#2a2a2a', border: '1px solid #d4af37', color: '#ffffff' }}>
+          <div className="stat-card" style={{ background: '#fff1f2', border: '1px solid #fecaca', color: '#7f1d1d' }}>
             <h3 style={{ marginTop: 0 }}>Mauvaise gestion détectée</h3>
             <p style={{ margin: '8px 0', textAlign: 'center' }}>
               Vos dépenses ({formatCurrency(globalStats.total)}) dépassent vos revenus ({formatCurrency(getTotalIncome())}).
@@ -1093,7 +1091,7 @@ function App() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#1a1a1a', color: '#d4af37', border: '1px solid #d4af37' }}>
+          <div className="stat-icon" style={{ background: '#fef3c7', color: '#f59e0b' }}>
             <Calendar size={28} />
           </div>
           <div className="stat-content">
@@ -1157,7 +1155,7 @@ function App() {
                   const status = getExpenseManagementStatus(formData.amount);
                   const color = status.level === 'good' ? '#16a34a' : status.level === 'warning' ? '#f59e0b' : status.level === 'bad' ? '#dc2626' : '#6b7280';
                   return (
-                    <div style={{ padding: '8px', borderRadius: 6, background: '#1a1a1a', border: `1px solid ${color}` }}>
+                    <div style={{ padding: '8px', borderRadius: 6, background: '#ffffff', border: `1px solid ${color}` }}>
                       <strong style={{ color }}>{status.level === 'good' ? 'Bon' : status.level === 'warning' ? 'Attention' : status.level === 'bad' ? 'Mauvais' : 'Info'}</strong>
                       <div style={{ marginTop: 4 }}>{status.text}</div>
                     </div>
@@ -1474,7 +1472,7 @@ function App() {
               {selectedCategoryDetails.category?.icon} Détails - {selectedCategoryDetails.category?.name}
             </h2>
             
-            <div style={{ marginBottom: '16px', padding: '12px', background: '#2a2a2a', border: '1px solid #3a3a3a', borderRadius: '8px', color: '#ffffff' }}>
+            <div style={{ marginBottom: '16px', padding: '12px', background: '#f3f4f6', borderRadius: '8px' }}>
               <strong>Total: {formatCurrency(selectedCategoryDetails.category?.total || 0)}</strong>
               <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
                 {selectedCategoryDetails.expenses?.length || 0} transaction(s)
@@ -1562,14 +1560,14 @@ function App() {
               const breakdown = calculateInterestAndPrincipalRemaining(repaymentModal.loan);
               return (
                 <div>
-                  <div style={{ marginBottom: '20px', padding: '12px', background: '#2a2a2a', border: '1px solid #3a3a3a', borderRadius: '8px', color: '#ffffff' }}>
+                  <div style={{ marginBottom: '20px', padding: '12px', background: '#f8f9fa', borderRadius: '8px' }}>
                     <div><strong>Informations du prêt :</strong></div>
                     <div>Capital: {formatCurrency(repaymentModal.loan.principal)} · Intérêt: {repaymentModal.loan.interest_rate}%</div>
                     <div>Intérêts restants: {formatCurrency(breakdown.interestRemaining)}</div>
                     <div>Capital restant: {formatCurrency(breakdown.principalRemaining)}</div>
                   </div>
                   
-                  <div style={{ marginBottom: '15px', padding: '12px', background: '#2a2a2a', border: '1px solid #d4af37', borderRadius: '8px', color: '#d4af37' }}>
+                  <div style={{ marginBottom: '15px', padding: '12px', background: '#fff3cd', border: '1px solid #ffeaa7', borderRadius: '8px' }}>
                     <div style={{ fontSize: '14px', color: '#856404' }}>
                       <strong>💡 Information :</strong> Ce remboursement sera automatiquement enregistré comme une dépense dans la catégorie "Remboursement de prêt" et impactera votre solde disponible.
                     </div>
@@ -1641,7 +1639,7 @@ function App() {
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <h2 style={{ color: '#dc3545' }}>🔒 Authentification requise</h2>
             
-            <div style={{ marginBottom: '20px', padding: '15px', background: '#2a2a2a', border: '1px solid #d4af37', borderRadius: '8px', color: '#ffffff' }}>
+            <div style={{ marginBottom: '20px', padding: '15px', background: '#fff3cd', border: '1px solid #ffeaa7', borderRadius: '8px' }}>
               <p style={{ margin: 0, fontWeight: 'bold', color: '#856404' }}>
                 ⚠️ Cette action va supprimer TOUTES vos données de façon IRRÉVERSIBLE :
               </p>
@@ -1671,7 +1669,7 @@ function App() {
                   }
                 }}
               />
-              <small style={{ color: '#cccccc', fontSize: '12px', marginTop: '5px', display: 'block' }}>
+              <small style={{ color: '#666', fontSize: '12px', marginTop: '5px', display: 'block' }}>
                 � Utilisez le même mot de passe que pour vous connecter à l'application
               </small>
             </div>

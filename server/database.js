@@ -112,6 +112,7 @@ const initDatabase = async () => {
       amount REAL NOT NULL,
       description TEXT,
       month TEXT NOT NULL,
+      date TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
@@ -135,6 +136,8 @@ const initDatabase = async () => {
       loan_id INTEGER NOT NULL,
       amount REAL NOT NULL,
       date TEXT NOT NULL,
+      interest_amount REAL DEFAULT 0,
+      principal_amount REAL DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
