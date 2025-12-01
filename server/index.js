@@ -88,6 +88,17 @@ app.get('/api/expenses', (req, res) => {
 app.post('/api/expenses', (req, res) => {
   try {
     const { amount, category_id, description, date } = req.body;
+    // Vérifier qu'il existe au moins un revenu (ex: salaire) pour le mois de la dépense
+    // On suppose que la colonne `month` dans `incomes` est au format 'YYYY-MM'
+    const expenseMonth = date ? date.slice(0, 7) : (new Date()).toISOString().slice(0, 7);
+    // Recherche stricte : requiert un revenu explicitement marqué comme "salaire"
+    const incomeCountRow = database.prepare(
+      "SELECT COUNT(*) as count FROM incomes WHERE month = ? AND (type = 'salary' OR COALESCE(LOWER(description), '') LIKE '%salaire%' OR COALESCE(LOWER(description), '') LIKE '%salary%')"
+    ).get(expenseMonth);
+    const incomeCount = incomeCountRow ? incomeCountRow.count : 0;
+    if (!incomeCount || Number(incomeCount) === 0) {
+      return res.status(400).json({ error: `Aucun revenu explicitement marqué 'salaire' trouvé pour ${expenseMonth}. Ajoutez d'abord votre salaire pour ce mois.` });
+    }
     const stmt = database.prepare('INSERT INTO expenses (amount, category_id, description, date) VALUES (?, ?, ?, ?)');
     const result = stmt.run(amount, category_id, description || '', date);
     
@@ -109,6 +120,17 @@ app.post('/api/expenses', (req, res) => {
 app.put('/api/expenses/:id', (req, res) => {
   try {
     const { amount, category_id, description, date } = req.body;
+    // Si la date change, vérifier la présence d'un revenu pour le mois ciblé
+    if (date) {
+      const expenseMonth = date.slice(0, 7);
+      const incomeCountRow = database.prepare(
+        "SELECT COUNT(*) as count FROM incomes WHERE month = ? AND (type = 'salary' OR COALESCE(LOWER(description), '') LIKE '%salaire%' OR COALESCE(LOWER(description), '') LIKE '%salary%')"
+      ).get(expenseMonth);
+      const incomeCount = incomeCountRow ? incomeCountRow.count : 0;
+      if (!incomeCount || Number(incomeCount) === 0) {
+        return res.status(400).json({ error: `Aucun revenu explicitement marqué 'salaire' trouvé pour ${expenseMonth}. Ajoutez d'abord votre salaire pour ce mois.` });
+      }
+    }
     const stmt = database.prepare('UPDATE expenses SET amount = ?, category_id = ?, description = ?, date = ? WHERE id = ?');
     stmt.run(amount, category_id, description, date, req.params.id);
     
@@ -292,9 +314,10 @@ app.get('/api/incomes', (req, res) => {
 // Créer un revenu
 app.post('/api/incomes', (req, res) => {
   try {
-    const { amount, description, date, month } = req.body;
-    const stmt = database.prepare('INSERT INTO incomes (amount, description, date, month) VALUES (?, ?, ?, ?)');
-    const result = stmt.run(amount, description || '', date || null, month);
+    const { amount, description, date, month, type } = req.body;
+    const incomeType = type || 'other';
+    const stmt = database.prepare('INSERT INTO incomes (amount, description, date, month, type) VALUES (?, ?, ?, ?, ?)');
+    const result = stmt.run(amount, description || '', date || null, month, incomeType);
     
     const income = database.prepare('SELECT * FROM incomes WHERE id = ?').get(result.lastInsertRowid);
     res.json(income);
@@ -306,9 +329,10 @@ app.post('/api/incomes', (req, res) => {
 // Modifier un revenu
 app.put('/api/incomes/:id', (req, res) => {
   try {
-    const { amount, description, date, month } = req.body;
-    const stmt = database.prepare('UPDATE incomes SET amount = ?, description = ?, date = ?, month = ? WHERE id = ?');
-    stmt.run(amount, description, date || null, month, req.params.id);
+    const { amount, description, date, month, type } = req.body;
+    const incomeType = type || 'other';
+    const stmt = database.prepare('UPDATE incomes SET amount = ?, description = ?, date = ?, month = ?, type = ? WHERE id = ?');
+    stmt.run(amount, description || '', date || null, month, incomeType, req.params.id);
     
     const income = database.prepare('SELECT * FROM incomes WHERE id = ?').get(req.params.id);
     res.json(income);
@@ -459,28 +483,81 @@ app.get('/api/loans', (req, res) => {
   }
 });
 
-// Nouvelle route : Calculer le solde disponible (revenus + prêts reçus - dépenses)
+// Nouvelle route : Calculer le solde disponible du mois (revenus - dépenses)
+// Le solde est maintenant calculé PAR MOIS uniquement
 app.get('/api/balance', (req, res) => {
   try {
-    // Calculer total des revenus en excluant les revenus marqués comme "Prêt" (ancienne logique)
-    const totalIncomes = database.prepare(
-      "SELECT COALESCE(SUM(amount), 0) as total FROM incomes WHERE COALESCE(LOWER(description), '') NOT LIKE '%prêt%' AND COALESCE(LOWER(description), '') NOT LIKE '%pret%'")
-      .get().total;
+    const { month, year } = req.query;
+    
+    let totalIncomes = 0;
+    let totalExpenses = 0;
+    let hasSalary = false;
+    
+    if (month && year) {
+      // Calculer pour un mois spécifique
+      const monthFormatted = `${year}-${String(month).padStart(2, '0')}`;
+      
+      // Revenus du mois (excluant les prêts)
+      totalIncomes = database.prepare(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM incomes 
+         WHERE month = ? 
+         AND COALESCE(LOWER(description), '') NOT LIKE '%prêt%' 
+         AND COALESCE(LOWER(description), '') NOT LIKE '%pret%'`)
+        .get(monthFormatted).total;
+      
+      // Vérifier si un salaire existe pour ce mois
+      const salaryCount = database.prepare(
+        `SELECT COUNT(*) as count FROM incomes 
+         WHERE month = ? 
+         AND (type = 'salary' OR COALESCE(LOWER(description), '') LIKE '%salaire%' OR COALESCE(LOWER(description), '') LIKE '%salary%')`)
+        .get(monthFormatted).count;
+      hasSalary = salaryCount > 0;
+      
+      // Dépenses du mois
+      totalExpenses = database.prepare(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM expenses 
+         WHERE strftime('%m', date) = ? AND strftime('%Y', date) = ?`)
+        .get(String(month).padStart(2, '0'), String(year)).total;
+    } else {
+      // Fallback : tous les mois (comportement précédent)
+      totalIncomes = database.prepare(
+        `SELECT COALESCE(SUM(amount), 0) as total FROM incomes 
+         WHERE COALESCE(LOWER(description), '') NOT LIKE '%prêt%' 
+         AND COALESCE(LOWER(description), '') NOT LIKE '%pret%'`)
+        .get().total;
 
-    // Pour information seulement : total des prêts reçus
+      totalExpenses = database.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM expenses').get().total;
+      hasSalary = true; // Pas de vérification en mode global
+    }
+
+    // Pour information seulement : total des prêts reçus (global, pas par mois)
     const totalLoansReceived = database.prepare('SELECT COALESCE(SUM(principal), 0) as total FROM loans').get().total;
+    
+    // Total des remboursements de prêts effectués (global)
+    const totalLoanRepayments = database.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM repayments').get().total;
+    
+    // Solde restant des prêts non soldés
+    const loansBalance = database.prepare(`
+      SELECT COALESCE(SUM(
+        l.principal + (l.principal * l.interest_rate / 100) - COALESCE(r.total_repaid, 0)
+      ), 0) as total
+      FROM loans l
+      LEFT JOIN (
+        SELECT loan_id, SUM(amount) as total_repaid FROM repayments GROUP BY loan_id
+      ) r ON l.id = r.loan_id
+      WHERE (l.principal + (l.principal * l.interest_rate / 100) - COALESCE(r.total_repaid, 0)) > 0
+    `).get().total;
 
-    // Calculer total des dépenses (y compris remboursements qui sont créés comme dépenses)
-    const totalExpenses = database.prepare('SELECT COALESCE(SUM(amount), 0) as total FROM expenses').get().total;
-
-    // Solde disponible = Revenus (excl. prêts) - Dépenses
+    // Solde disponible du mois = Revenus du mois - Dépenses du mois
     const availableBalance = totalIncomes - totalExpenses;
 
     res.json({
       totalIncomes,
       totalLoansReceived,
       totalExpenses,
-      availableBalance: Math.max(availableBalance, 0)
+      availableBalance: Math.max(availableBalance, 0),
+      hasSalary, // Indique si le mois a un salaire enregistré
+      loansBalance // Montant total restant à rembourser sur les prêts
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -585,6 +662,27 @@ async function startServer() {
   try {
     await database.ready();
     dbReady = true;
+    // Migration légère : ajouter la colonne `type` à la table incomes si absente
+    try {
+      const cols = database.prepare("PRAGMA table_info(incomes)").all();
+      const hasType = cols && cols.some && cols.some(c => c.name === 'type');
+      if (!hasType) {
+        console.log('🔧 Migration DB : ajout de la colonne incomes.type');
+        database.prepare("ALTER TABLE incomes ADD COLUMN type TEXT DEFAULT 'other'").run();
+        console.log('✅ Colonne incomes.type ajoutée (default "other")');
+      }
+      // Marquer comme 'salary' les revenus existants dont la description contient 'salaire'/'salary'
+      try {
+        const res = database.prepare("UPDATE incomes SET type = 'salary' WHERE COALESCE(LOWER(description), '') LIKE '%salaire%' OR COALESCE(LOWER(description), '') LIKE '%salary%'").run();
+        if (res && res.changes) {
+          console.log(`✅ Migration DB : ${res.changes} revenu(s) existant(s) marqué(s) comme 'salary'`);
+        }
+      } catch (markErr) {
+        console.warn('⚠️ Migration automatique pour marquer les revenus comme salary a échoué :', markErr.message || markErr);
+      }
+    } catch (migErr) {
+      console.warn('⚠️ Migration incomes.type échouée ou déjà appliquée :', migErr.message || migErr);
+    }
     console.log('✅ Base de données initialisée');
     
     const server = app.listen(PORT, () => {

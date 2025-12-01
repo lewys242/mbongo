@@ -23,7 +23,7 @@ db.ready().then(() => {
   const currentDate = new Date();
   const currentMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
   
-  db.prepare('INSERT INTO incomes (amount, description, month) VALUES (?, ?, ?)').run(350000, 'Salaire', currentMonth);
+  db.prepare('INSERT INTO incomes (amount, description, month, type) VALUES (?, ?, ?, ?)').run(350000, 'Salaire', currentMonth, 'salary');
   console.log('💰 Revenu créé: 350,000 FCFA');
   
   // Créer des dépenses d'exemple pour le mois courant
