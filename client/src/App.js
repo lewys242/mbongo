@@ -1774,11 +1774,11 @@ function App() {
                   </div>
                   
                   {(repaymentForm.interestAmount || repaymentForm.principalAmount) && (
-                    <div style={{ marginTop: '15px', padding: '12px', backgroundColor: '#e8f5e8', borderRadius: '8px' }}>
-                      <strong>Récapitulatif :</strong>
-                      <div>Intérêts: {formatCurrency(Math.max(0, Number(repaymentForm.interestAmount) || 0))}</div>
-                      <div>Capital: {formatCurrency(Math.max(0, Number(repaymentForm.principalAmount) || 0))}</div>
-                      <div><strong>Total: {formatCurrency(Math.max(0, (Number(repaymentForm.interestAmount) || 0) + (Number(repaymentForm.principalAmount) || 0)))}</strong></div>
+                    <div style={{ marginTop: '15px', padding: '12px', backgroundColor: 'rgba(16, 185, 129, 0.15)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                      <strong style={{ color: '#10b981' }}>Récapitulatif :</strong>
+                      <div style={{ color: '#e2e8f0', marginTop: '8px' }}>Intérêts: {formatCurrency(Math.max(0, Number(repaymentForm.interestAmount) || 0))}</div>
+                      <div style={{ color: '#e2e8f0' }}>Capital: {formatCurrency(Math.max(0, Number(repaymentForm.principalAmount) || 0))}</div>
+                      <div style={{ color: '#10b981', marginTop: '8px' }}><strong>Total: {formatCurrency(Math.max(0, (Number(repaymentForm.interestAmount) || 0) + (Number(repaymentForm.principalAmount) || 0)))}</strong></div>
                     </div>
                   )}
                 </div>
