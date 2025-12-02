@@ -9,12 +9,29 @@ body {
   font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #1a1a1a;
+  background: 
+    /* Motifs subtils pour continuité */
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 80px,
+      rgba(255, 215, 0, 0.02) 80px,
+      rgba(255, 215, 0, 0.02) 82px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 80px,
+      rgba(192, 192, 192, 0.015) 80px,
+      rgba(192, 192, 192, 0.015) 82px
+    ),
+    /* Dégradé principal - plus sombre pour la continuité */
+    linear-gradient(135deg, #2a2a3e 0%, #3a3a4e 50%, #1a1a2e 100%);
   min-height: 100vh;
   position: relative;
   line-height: 1.6;
   letter-spacing: -0.01em;
-  color: #ffffff;
+  color: #f5f5f5;
 }
 
 /* Symboles monétaires subtils pour l'application principale */
@@ -28,7 +45,7 @@ body::before {
   font-size: 14px;
   line-height: 100px;
   word-spacing: 150px;
-  color: rgba(245, 158, 11, 0.015);
+  color: rgba(255, 215, 0, 0.025);
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
@@ -63,7 +80,27 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1a1a1a;
+  background: 
+    /* Motifs de base plus visibles */
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 40px,
+      rgba(255, 215, 0, 0.12) 40px,
+      rgba(255, 215, 0, 0.12) 42px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 40px,
+      rgba(192, 192, 192, 0.08) 40px,
+      rgba(192, 192, 192, 0.08) 42px
+    ),
+    /* Points dorés */
+    radial-gradient(circle at 25% 25%, rgba(255, 215, 0, 0.2) 2px, transparent 2px),
+    radial-gradient(circle at 75% 75%, rgba(255, 215, 0, 0.15) 2px, transparent 2px),
+    /* Fond principal - transition vers l'app */
+    linear-gradient(135deg, #1a1a2e 0%, #2a2a3e 50%, #1a1a2e 100%);
   background-size: 80px 80px, 80px 80px, 100px 100px, 120px 120px, auto;
   position: relative;
   overflow: hidden;
@@ -360,18 +397,18 @@ code {
 
 
 .login-card {
-  background: #2a2a2a;
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(10px);
   padding: 32px;
   border-radius: 16px;
   width: 400px;
   box-shadow: 
-    0 20px 40px rgba(0,0,0,0.6),
-    0 8px 16px rgba(0,0,0,0.4);
+    0 20px 40px rgba(0,0,0,0.3),
+    0 8px 16px rgba(0,0,0,0.2);
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border: 2px solid #d4af37;
+  border: 1px solid rgba(255,255,255,0.1);
   position: relative;
   z-index: 10;
 }
@@ -389,41 +426,40 @@ code {
   display:flex; 
   align-items:center; 
   justify-content:center; 
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); 
   color:#fff; 
   font-size:22px; 
   font-weight:700;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 .login-title { 
   font-size:24px; 
   font-weight:700; 
-  color:#ffffff;
+  color:#0f172a;
 }
 
 .login-sub { 
   font-size:14px; 
-  color:#d4af37;
+  color:#64748b;
   font-weight: 400;
 }
 .login-card h2 { margin: 0 0 6px 0; }
-.login-card label { display:block; font-size: 14px; color:#ffffff; font-weight: 600; }
+.login-card label { display:block; font-size: 14px; color:#334155; font-weight: 600; }
 .login-card input { 
   width:100%; 
   padding:12px 14px; 
   margin-top:8px; 
-  border:2px solid #3a3a3a; 
+  border:2px solid #e2e8f0; 
   border-radius:8px;
   font-size: 14px;
   transition: border-color 0.3s ease;
-  background: #1a1a1a;
-  color: #ffffff;
+  background: #fff;
 }
 .login-card input:focus {
   outline: none;
-  border-color: #d4af37;
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 .login-card .error { color:#dc2626; font-size:14px; background: rgba(220,38,38,0.1); padding: 8px 12px; border-radius: 8px; }
 .login-card button { 
@@ -431,7 +467,7 @@ code {
   padding:14px; 
   border-radius:8px; 
   border: none; 
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+  background: #4CAF50; 
   color:#fff; 
   font-weight:600;
   font-size: 15px;
@@ -439,178 +475,34 @@ code {
   transition: all 0.3s ease;
 }
 .login-card button:hover {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  background: #45a049;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
-}
-
-/* Form group styles */
-.form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 16px;
-}
-
-.form-group label {
-  margin-bottom: 6px;
-}
-
-/* Amélioration subtile de la lisibilité du texte */
-.card h2, .card h3, .card h4, .card p, .card span, .card div {
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-  font-weight: 500;
-}
-
-.money-card h2, .money-card h3, .money-card h4, .money-card p, .money-card span, .money-card div {
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
-  font-weight: 500;
-}
-
-/* Spécifiquement pour les mots Total, Solde, Transaction, Période */
-.dashboard h2, .dashboard h3, .dashboard h4,
-.card h2, .card h3, .card h4,
-.money-card h2, .money-card h3, .money-card h4,
-.total-text, .solde-text, .transaction-text, .periode-text,
-[data-label="Total"], [data-label="Solde"], [data-label="Transaction"], [data-label="Période"] {
-  color: #ffffff !important;
-  font-weight: 600 !important;
-  text-shadow: none !important;
-  font-size: 15px !important;
-}
-
-/* Spécifiquement pour les chiffres et montants */
-.money-balance, .amount, .total {
-  text-shadow: none !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.5px;
-  color: #d4af37 !important;
-}
-
-/* Styles pour améliorer la lisibilité générale */
-.card *, .money-card *, .header * {
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
-  text-rendering: optimizeLegibility !important;
-}
-
-/* Exception pour la carte d'épargne */
-.savings-card, .savings-card * {
-  color: #ffffff !important;
-  text-shadow: none !important;
-}
-
-/* Couleurs pour la grille de stats */
-.stats-grid * {
-  color: #ffffff !important;
-}
-
-/* RÈGLE GLOBALE - Texte blanc sur fond sombre */
-/* Exclut la page de login et la carte d'épargne */
-h3:not(.login-page *):not(.login-card *):not(.login-brand *):not(.savings-card *),
-p:not(.login-page *):not(.login-card *):not(.login-brand *):not(.savings-card *),
-span:not(.login-page *):not(.login-card *):not(.login-brand *):not(.savings-card *),
-div:not(.login-page *):not(.login-card *):not(.login-brand *):not(.savings-card *) {
-  color: #ffffff !important;
-}
-
-/* Exception pour la carte d'épargne */
-.savings-card h3, .savings-card p, .savings-card span, .savings-card div,
-.savings-card *, .savings-info * {
-  color: #ffffff !important;
-}
-
-/* Exception pour la page de login - garde les couleurs d'origine */
-.login-page *, .login-card *, .login-brand *,
-.login-title, .login-sub, .money-symbols * {
-  color: inherit !important;
-}
-
-/* Styles pour Solde, Transaction, Période */
-div[class*="solde"] *, 
-div[class*="transaction"] *,
-div[class*="periode"] *,
-*[class*="solde"],
-*[class*="transaction"], 
-*[class*="periode"] {
-  color: #1e293b !important;
-  text-shadow: none !important;
-  font-weight: 600 !important;
-  font-size: 15px !important;
-}
-
-/* Montants et valeurs des cartes */
-.card .amount, .card .balance, .card .value, .card .count,
-.money-card .amount, .money-card .balance, .money-card .value, .money-card .count,
-.dashboard .amount, .dashboard .balance, .dashboard .value, .dashboard .count,
-.card p, .card span.number, .card .currency,
-.money-card p, .money-card span.number, .money-card .currency,
-.card h1, .card h2, .card h3, .card h4, .card h5,
-.money-card h1, .money-card h2, .money-card h3, .money-card h4, .money-card h5 {
-  color: #ffffff !important;
-  text-shadow: none !important;
-  font-weight: 600 !important;
-}
-
-/* Contenu des cartes avec texte blanc */
-.card *, .card,
-.money-card *, .money-card,
-.dashboard-card *, .dashboard-card,
-.stat-card *, .stat-card,
-.stat-content *, .stat-content {
-  color: #ffffff !important;
-  text-shadow: none !important;
-}
-
-/* Gros textes et montants */
-.card > *, .money-card > *,
-.stat-card > *, .stat-content > * {
-  color: #ffffff !important;
-}
-
-/* Titres et contenus des stats */
-.stat-card h3, .stat-content h3,
-.stat-card p, .stat-content p {
-  color: #ffffff !important;
-  font-weight: 600 !important;
-  text-shadow: none !important;
-}
-
-/* Éléments p avec style inline */
-.stat-card p[style], .stat-content p[style] {
-  color: #ffffff !important;
-}
-
-/* Contenus de montants */
-.stats-grid .stat-card p,
-.stats-grid .stat-content p {
-  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 /* Header improvements */
 .header {
-  background: #2a2a2a;
+  background: linear-gradient(145deg, 
+    rgba(25, 25, 41, 0.98) 0%, 
+    rgba(35, 35, 51, 0.95) 50%, 
+    rgba(30, 30, 46, 0.98) 100%);
+  backdrop-filter: blur(25px) saturate(1.3);
   border-radius: 24px;
   padding: 24px 32px;
   margin-bottom: 32px;
   box-shadow: 
-    0 10px 25px rgba(0,0,0,0.5),
-    0 4px 10px rgba(0,0,0,0.3);
-  border: 1px solid #d4af37;
+    0 20px 40px rgba(0,0,0,0.4),
+    0 8px 16px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,215,0,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.2);
   display:flex;
   align-items:center;
   justify-content:space-between;
-  /* Suppression complète du flou et optimisation texte */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
   border: 1px solid rgba(255, 215, 0, 0.25);
   position: relative;
   z-index: 10;
   color: #f5f5f5;
   overflow: hidden;
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 
 .header::before {
@@ -641,9 +533,13 @@ div[class*="periode"] *,
 .header h1 { 
   font-size: 28px; 
   margin-bottom: 0; 
-  color: #d4af37;
+  color: #f8f9fa;
   font-weight: 700;
   letter-spacing: -0.025em;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffd700 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .header p { 
   margin: 0; 
@@ -674,27 +570,27 @@ div[class*="periode"] *,
 
 /* Money card (inspired) */
 .money-card {
-  background: #2a2a2a;
-  color: #ffffff;
+  background: linear-gradient(145deg, 
+    rgba(20, 20, 35, 0.98) 0%,
+    rgba(30, 30, 45, 0.95) 25%,
+    rgba(25, 25, 40, 0.98) 75%,
+    rgba(15, 15, 30, 0.98) 100%);
+  backdrop-filter: blur(25px) saturate(1.4);
+  color: #fff;
   border-radius: 24px;
   padding: 28px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   box-shadow: 
-    0 10px 25px rgba(0,0,0,0.5),
-    0 4px 10px rgba(0,0,0,0.3);
-  border: 1px solid #d4af37;
+    0 30px 60px rgba(0,0,0,0.5),
+    0 15px 30px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,215,0,0.15),
+    inset 0 0 20px rgba(255,140,0,0.03);
+  border: 2px solid rgba(255, 215, 0, 0.3);
   position: relative;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Suppression complète du flou et optimisation texte */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 
 .money-card::before {
@@ -772,7 +668,7 @@ div[class*="periode"] *,
   transform: translateY(-2px);
   border-color: rgba(255, 215, 0, 0.25);
 }
-.action-tile .tile-icon { width:46px; height:46px; border-radius:10px; background:#1a1a1a; display:flex; align-items:center; justify-content:center; color:#d4af37; border: 1px solid #d4af37; }
+.action-tile .tile-icon { width:46px; height:46px; border-radius:10px; background:#ffedd5; display:flex; align-items:center; justify-content:center; color:#c2410c }
 .action-tile small { color:#6b7280 }
 
 @media (max-width: 640px) {
@@ -780,26 +676,25 @@ div[class*="periode"] *,
 }
 
 .card {
-  background: #2a2a2a;
+  background: linear-gradient(145deg, 
+    rgba(30, 30, 46, 0.95) 0%, 
+    rgba(40, 40, 56, 0.9) 50%, 
+    rgba(35, 35, 51, 0.95) 100%);
+  backdrop-filter: blur(20px) saturate(1.2);
   border-radius: 20px;
   padding: 32px;
   box-shadow: 
-    0 10px 25px rgba(0,0,0,0.5),
-    0 4px 10px rgba(0,0,0,0.3);
+    0 25px 50px rgba(0,0,0,0.4),
+    0 12px 24px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,215,0,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.3);
   margin-bottom: 24px;
-  border: 1px solid #d4af37;
+  border: 1px solid rgba(255, 215, 0, 0.2);
   position: relative;
   z-index: 2;
-  color: #ffffff;
+  color: #f5f5f5;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  /* Suppression complète du flou et optimisation texte */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 
 .card::before {
@@ -857,13 +752,12 @@ div[class*="periode"] *,
 }
 
 .btn-secondary {
-  background: #3a3a3a;
-  color: #ffffff;
-  border: 1px solid #d4af37;
+  background: #e2e8f0;
+  color: #334155;
 }
 
 .btn-secondary:hover {
-  background: #4a4a4a;
+  background: #cbd5e1;
 }
 
 .btn-danger {
@@ -902,19 +796,13 @@ div[class*="periode"] *,
 .input-group textarea {
   width: 100%;
   padding: 12px 16px;
-  background: #1a1a1a;
-  border: 2px solid #3a3a3a;
+  background: rgba(30, 30, 46, 0.8);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 12px;
   font-size: 14px;
-  color: #ffffff;
+  color: #f5f5f5;
   transition: all 0.3s ease;
-}
-
-.input-group input:focus,
-.input-group select:focus,
-.input-group textarea:focus {
-  border-color: #d4af37;
-  outline: none;
+  backdrop-filter: blur(10px);
 }
 
 .input-group input::placeholder,
@@ -958,7 +846,10 @@ div[class*="periode"] *,
 }
 
 .modal {
-  background: #2a2a2a;
+  background: linear-gradient(145deg, 
+    rgba(25, 25, 41, 0.98) 0%, 
+    rgba(35, 35, 51, 0.95) 50%, 
+    rgba(30, 30, 46, 0.98) 100%);
   backdrop-filter: blur(25px) saturate(1.3);
   border-radius: 24px;
   padding: 32px;
@@ -967,11 +858,12 @@ div[class*="periode"] *,
   max-height: 90vh;
   overflow-y: auto;
   animation: slideUp 0.3s ease;
-  border: 2px solid #d4af37;
-  color: #ffffff;
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  color: #f5f5f5;
   box-shadow: 
-    0 25px 50px rgba(0,0,0,0.7),
-    0 12px 24px rgba(0,0,0,0.5);
+    0 25px 50px rgba(0,0,0,0.5),
+    0 12px 24px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,215,0,0.1);
 }
 
 @keyframes slideUp {
@@ -987,7 +879,11 @@ div[class*="periode"] *,
 
 .modal h2 {
   margin-bottom: 24px;
-  color: #d4af37;
+  color: #f8f9fa;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffd700 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   font-weight: 700;
 }
 
@@ -1066,12 +962,12 @@ div[class*="periode"] *,
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid #3a3a3a;
+  border-bottom: 1px solid #e2e8f0;
   transition: background 0.2s ease;
 }
 
 .expense-item:hover {
-  background: #333333;
+  background: #f8fafc;
 }
 
 .expense-item:last-child {
@@ -1110,8 +1006,7 @@ div[class*="periode"] *,
   height: 36px;
   border: none;
   border-radius: 8px;
-  background: #1a1a1a;
-  color: #ffffff;
+  background: #f1f5f9;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1120,7 +1015,7 @@ div[class*="periode"] *,
 }
 
 .icon-btn:hover {
-  background: #d4af37;
+  background: #e2e8f0;
   transform: scale(1.1);
 }
 
@@ -1141,24 +1036,31 @@ div[class*="periode"] *,
 }
 
 .loan-item {
-  background: #2a2a2a;
+  background: linear-gradient(145deg, 
+    rgba(30, 30, 46, 0.95) 0%, 
+    rgba(40, 40, 56, 0.9) 50%, 
+    rgba(35, 35, 51, 0.95) 100%);
   backdrop-filter: blur(15px);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 16px;
   box-shadow: 
-    0 8px 16px rgba(0,0,0,0.4),
-    0 4px 8px rgba(0,0,0,0.3);
-  border-left: 4px solid #d4af37;
-  border: 1px solid #d4af37;
+    0 8px 16px rgba(0,0,0,0.3),
+    0 4px 8px rgba(0,0,0,0.2);
+  border-left: 4px solid #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.15);
   transition: all 0.3s ease;
-  color: #ffffff;
+  color: #f5f5f5;
 }
 
 .loan-item:hover {
   transform: translateY(-2px);
-  border-left-color: #d4af37;
-  box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+  border-left-color: #ffed4e;
+}
+}
+
+.loan-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .loan-main {
@@ -1198,9 +1100,8 @@ div[class*="periode"] *,
   padding: 8px 12px;
   font-size: 13px;
   border-radius: 6px;
-  border: 1px solid #d4af37;
-  background: #1a1a1a;
-  color: #ffffff;
+  border: 1px solid #ddd;
+  background: white;
   cursor: pointer;
   transition: all 0.2s ease;
   display: inline-flex;
@@ -1272,7 +1173,10 @@ div[class*="periode"] *,
 
 .header h1 {
   font-size: 28px;
-  color: #d4af37;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffd700 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin-bottom: 4px;
   font-weight: 700;
   letter-spacing: -0.025em;
@@ -1293,12 +1197,13 @@ div[class*="periode"] *,
 
 .filters select {
   padding: 12px 16px;
-  border: 2px solid #3a3a3a;
+  border: 1px solid rgba(255, 215, 0, 0.2);
   border-radius: 12px;
   font-size: 14px;
-  background: #1a1a1a;
-  color: #ffffff;
+  background: rgba(30, 30, 46, 0.8);
+  color: #f5f5f5;
   cursor: pointer;
+  backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }
 
@@ -1312,15 +1217,13 @@ div[class*="periode"] *,
 .stat-card select {
   padding: 6px 10px;
   border-radius: 8px;
-  border: 2px solid #3a3a3a;
-  background: #1a1a1a;
-  color: #ffffff;
+  border: 1px solid #e2e8f0;
 }
 
 /* Carte épargne */
 .savings-card {
-  background: #2a2a2a;
-  border: 1px solid #d4af37;
+  background: white;
+  border: 1px solid #e6f5d6;
 }
 
 .savings-rate-btn {
@@ -1354,12 +1257,12 @@ div[class*="periode"] *,
   width: 16px;
   left: 2px;
   top: 2px;
-  background-color: #ffffff;
+  background-color: white;
   transition: .2s;
   border-radius: 50%;
 }
 
-.toggle-switch input:checked + .toggle-slider { background-color: #d4af37; }
+.toggle-switch input:checked + .toggle-slider { background-color: #10b981; }
 .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
 
 .savings-card .btn-sm { margin-left: 0; }
@@ -1436,7 +1339,10 @@ h3 { font-size: 20px; }
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: #d4af37;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffd700 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin: 8px 0;
 }
 

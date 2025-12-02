@@ -2,8 +2,8 @@
 node_modules/
 client/node_modules/
 
-# Database
-*.db
+# Database (budget.db is tracked for backup purposes)
+# *.db
 *.sqlite
 *.sqlite3
 

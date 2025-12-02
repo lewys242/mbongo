@@ -64,7 +64,7 @@ function App() {
   const [incomeStats, setIncomeStats] = useState({ total: 0, count: 0, bySource: [] });
 
   // Account / balance visibility
-  const [showBalance, setShowBalance] = useState(false); // masqué par défaut
+  const [showBalance, setShowBalance] = useState(true); // visible par défaut
 
   // Épargne
   const [savingsRate, setSavingsRate] = useState(() => {
@@ -104,51 +104,6 @@ function App() {
   const [showClearAllModal, setShowClearAllModal] = useState(false);
   const [clearAllPassword, setClearAllPassword] = useState('');
 
-  // Affichage du récapitulatif mois précédent
-  const [showPreviousMonth, setShowPreviousMonth] = useState(false);
-
-  // Récapitulatif du mois précédent
-  const [previousMonthData, setPreviousMonthData] = useState({
-    totalIncomes: 0,
-    totalExpenses: 0,
-    hasSalary: false,
-    balance: 0,
-    month: '',
-    year: ''
-  });
-
-  // Calculer le mois précédent
-  const getPreviousMonth = () => {
-    let prevMonth = selectedMonth - 1;
-    let prevYear = selectedYear;
-    if (prevMonth < 1) {
-      prevMonth = 12;
-      prevYear = prevYear - 1;
-    }
-    return { month: prevMonth, year: prevYear };
-  };
-
-  // Charger les données du mois précédent
-  const loadPreviousMonthData = async () => {
-    try {
-      const { month, year } = getPreviousMonth();
-      const [balanceRes, statsRes] = await Promise.all([
-        axios.get(`${API_URL}/balance`, { params: { month, year } }),
-        axios.get(`${API_URL}/stats`, { params: { month, year } })
-      ]);
-      setPreviousMonthData({
-        totalIncomes: balanceRes.data.totalIncomes || 0,
-        totalExpenses: statsRes.data.total || 0,
-        hasSalary: balanceRes.data.hasSalary || false,
-        balance: balanceRes.data.availableBalance || 0,
-        month,
-        year
-      });
-    } catch (error) {
-      console.error('Erreur chargement mois précédent:', error);
-    }
-  };
-
 
   useEffect(() => {
     loadCategories();
@@ -157,7 +112,6 @@ function App() {
     loadLoans();
     loadGlobalStats();
     loadBalance(); // Charger le solde disponible
-    loadPreviousMonthData(); // Charger les données du mois précédent
   }, [selectedMonth, selectedYear, viewMode]);
 
   useEffect(() => {
@@ -168,14 +122,12 @@ function App() {
     try { localStorage.setItem('savingsRate', String(savingsRate)); } catch(e) {}
   }, [savingsRate]);
 
-  // État pour le solde disponible du mois
+  // État pour le solde disponible
   const [balance, setBalance] = useState({
     totalIncomes: 0,
     totalLoansReceived: 0,
     totalExpenses: 0,
-    availableBalance: 0,
-    hasSalary: false, // Indique si le mois a un salaire
-    loansBalance: 0   // Total restant des prêts non soldés
+    availableBalance: 0
   });
 
   // Calculer le total des revenus SEULEMENT (pas les prêts)
@@ -188,12 +140,10 @@ function App() {
     }, 0);
   };
 
-  // Charger le solde disponible du mois sélectionné (revenus - dépenses)
+  // Charger le solde disponible (revenus + prêts - dépenses)
   const loadBalance = async () => {
     try {
-      const res = await axios.get(`${API_URL}/balance`, {
-        params: { month: selectedMonth, year: selectedYear }
-      });
+      const res = await axios.get(`${API_URL}/balance`);
       setBalance(res.data);
     } catch (error) {
       console.error('Erreur chargement solde:', error);
@@ -312,17 +262,20 @@ function App() {
     e.preventDefault();
     try {
       const month = `${selectedYear}-${selectedMonth.toString().padStart(2, '0')}`;
-      const payload = {
-        amount: incomeForm.amount,
-        description: incomeForm.description,
-        date: incomeForm.date,
-        month,
-        type: incomeForm.type || 'other'
-      };
       if (editingIncome) {
-        await axios.put(`${API_URL}/incomes/${editingIncome.id}`, payload);
+        await axios.put(`${API_URL}/incomes/${editingIncome.id}`, { 
+          amount: incomeForm.amount, 
+          description: incomeForm.description,
+          date: incomeForm.date,
+          month 
+        });
       } else {
-        await axios.post(`${API_URL}/incomes`, payload);
+        await axios.post(`${API_URL}/incomes`, { 
+          amount: incomeForm.amount, 
+          description: incomeForm.description,
+          date: incomeForm.date,
+          month 
+        });
       }
       setShowIncomeModal(false);
       setEditingIncome(null);
@@ -355,8 +308,7 @@ function App() {
     setIncomeForm({ 
       amount: income.amount, 
       description: income.description || '', 
-      date: income.date || '',
-      type: income.type || 'other'
+      date: income.date || '' 
     });
     setShowIncomeModal(true);
   };
@@ -888,16 +840,9 @@ function App() {
       <div className="money-card" style={{ marginBottom: '30px' }}>
           <div className="money-top">
             <div>
-              <div style={{ fontSize: 12, opacity: 0.95 }}>Solde disponible - {selectedMonth}/{selectedYear}</div>
+              <div style={{ fontSize: 12, opacity: 0.95 }}>Solde disponible</div>
               <div className="money-balance">{showBalance ? formatCurrency(balance.availableBalance) : '•••••••••'}</div>
-              <div className="money-meta">
-                {!balance.hasSalary && (
-                  <span style={{ color: '#fbbf24', marginRight: 8 }}>⚠️ Pas de salaire ce mois</span>
-                )}
-                {balance.loansBalance > 0 && (
-                  <span style={{ color: '#f87171' }}>📋 Prêts en cours: {showBalance ? formatCurrency(balance.loansBalance) : '•••'}</span>
-                )}
-              </div>
+              <div className="money-meta">Au {new Date().toLocaleString()}</div>
             </div>
             <div className="money-actions">
               <button title="Rafraîchir" className="icon-circle" onClick={() => { loadData(); loadIncomes(); loadGlobalStats(); loadBalance(); }}>
@@ -940,18 +885,18 @@ function App() {
                     justifyContent: 'space-between', 
                     alignItems: 'center', 
                     padding: '12px', 
-                    border: '1px solid #d4af37', 
+                    border: '1px solid #e0e0e0', 
                     borderRadius: '8px', 
                     marginBottom: '8px',
-                    background: '#2a2a2a'
+                    background: '#f8f9fa'
                   }}>
                     <div>
-                      <strong style={{ color: '#d4af37' }}>{formatCurrency(income.amount)}</strong>
+                      <strong>{formatCurrency(income.amount)}</strong>
                       {income.description && (
-                        <div style={{ fontSize: '0.9em', color: '#ffffff' }}>{income.description}</div>
+                        <div style={{ fontSize: '0.9em', color: '#666' }}>{income.description}</div>
                       )}
                       {income.date && (
-                        <div style={{ fontSize: '0.8em', color: '#cccccc', marginTop: '4px' }}>
+                        <div style={{ fontSize: '0.8em', color: '#888', marginTop: '4px' }}>
                           📅 {new Date(income.date).toLocaleDateString('fr-FR')}
                         </div>
                       )}
@@ -969,11 +914,9 @@ function App() {
                 <div style={{ 
                   marginTop: '16px', 
                   padding: '12px', 
-                  background: '#2a2a2a', 
-                  border: '1px solid #d4af37',
+                  background: '#e8f5e8', 
                   borderRadius: '8px', 
-                  fontWeight: 'bold',
-                  color: '#d4af37'
+                  fontWeight: 'bold' 
                 }}>
                   Total des revenus du mois: {formatCurrency(incomes.reduce((total, income) => total + Number(income.amount), 0))}
                 </div>
@@ -1048,13 +991,6 @@ function App() {
             Exporter CSV
           </button>
           <button className="btn btn-primary" onClick={() => {
-              // Empêcher l'ajout de dépense si aucun salaire pour le mois sélectionné
-              if (!balance.hasSalary) {
-                if (window.confirm(`Aucun salaire enregistré pour ${selectedMonth}/${selectedYear}. Voulez-vous ajouter le salaire maintenant ?`)) {
-                  setShowIncomeModal(true);
-                }
-                return;
-              }
               setShowModal(true);
               setEditingExpense(null);
               setFormData({
@@ -1073,7 +1009,7 @@ function App() {
       {/* Statistiques */}
       <div className="stats-grid" style={{ marginBottom: '30px' }}>
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#1a1a1a', color: '#ef4444', border: '1px solid #ef4444' }}>
+          <div className="stat-icon" style={{ background: '#fee2e2', color: '#ef4444' }}>
             <TrendingDown size={28} />
           </div>
           <div className="stat-content">
@@ -1095,116 +1031,27 @@ function App() {
           </div>
         )}
 
-        {/* Alerte si dépenses > revenus OU récapitulatif de gestion */}
-        {getTotalIncome() > 0 && (
-          <div className="stat-card" style={{ 
-            background: incomeUsedPercent > 100 ? '#2a2a2a' : incomeUsedPercent > 80 ? '#2a2a1a' : '#1a2a1a', 
-            border: `1px solid ${incomeUsedPercent > 100 ? '#ef4444' : incomeUsedPercent > 80 ? '#f59e0b' : '#10b981'}`, 
-            color: '#ffffff'
-          }}>
-            <div className="stat-icon" style={{ 
-              background: incomeUsedPercent > 100 ? '#fef2f2' : incomeUsedPercent > 80 ? '#fef3c7' : '#d1fae5', 
-              color: incomeUsedPercent > 100 ? '#ef4444' : incomeUsedPercent > 80 ? '#d97706' : '#10b981' 
-            }}>
-              {incomeUsedPercent > 100 ? '❌' : incomeUsedPercent > 80 ? '⚠️' : '✅'}
-            </div>
-            <div className="stat-content">
-              <h3>
-                {incomeUsedPercent > 100 ? 'Mauvaise gestion' : incomeUsedPercent > 80 ? 'Attention' : 'Bonne gestion'}
-                <span style={{ fontSize: 11, opacity: 0.7, marginLeft: 6 }}>{incomeUsedPercent}%</span>
-              </h3>
-              <div style={{ fontSize: 13 }}>
-                <div>💰 Salaire: <span style={{ color: '#10b981', fontWeight: 'bold' }}>{formatCurrency(getTotalIncome())}</span></div>
-                <div>📉 Dépensé: <span style={{ color: '#ef4444' }}>{formatCurrency(stats.total)}</span></div>
-                <div>📊 Reste: <span style={{ color: balance.availableBalance >= 0 ? '#10b981' : '#ef4444', fontWeight: 'bold' }}>{formatCurrency(balance.availableBalance)}</span></div>
+        {/* Alerte si dépenses > revenus */}
+        {getTotalIncome() > 0 && (globalStats.total > getTotalIncome()) && (
+          <div className="stat-card" style={{ background: '#fff1f2', border: '1px solid #fecaca', color: '#7f1d1d' }}>
+            <h3 style={{ marginTop: 0 }}>Mauvaise gestion détectée</h3>
+            <p style={{ margin: '8px 0', textAlign: 'center' }}>
+              Vos dépenses ({formatCurrency(globalStats.total)}) dépassent vos revenus ({formatCurrency(getTotalIncome())}).
+              Ne paniquez pas — voici quelques conseils pour retrouver de la maîtrise.
+            </p>
+            <button className="btn btn-warning" onClick={() => setShowAdvice(prev => !prev)} style={{ marginBottom: 8 }}>
+              {showAdvice ? 'Masquer les conseils' : 'Afficher les conseils de gestion'}
+            </button>
+            {showAdvice && (
+              <div>
+                <ul>
+                  {managementTips.map((t, i) => (
+                    <li key={i}>{t}</li>
+                  ))}
+                </ul>
+                <p style={{ fontStyle: 'italic', marginTop: 8 }}>Conseil rassurant : commencez par de petites actions. Ajuster 1 ou 2 postes de dépense suffit souvent pour retrouver l'équilibre.</p>
               </div>
-
-              {/* Boutons d'action */}
-              <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
-                {/* Bouton conseils - toujours visible */}
-                <button 
-                  onClick={() => setShowAdvice(prev => !prev)}
-                  style={{ 
-                    padding: '5px 10px', 
-                    fontSize: 11, 
-                    background: incomeUsedPercent > 100 ? '#ef4444' : incomeUsedPercent > 80 ? '#f59e0b' : '#10b981',
-                    border: 'none', 
-                    borderRadius: 4, 
-                    color: '#fff', 
-                    cursor: 'pointer' 
-                  }}
-                >
-                  {showAdvice ? '▼ Conseils' : '▶ Conseils'}
-                </button>
-
-                {/* Bouton récap mois précédent */}
-                {previousMonthData.hasSalary && (
-                  <button 
-                    onClick={() => setShowPreviousMonth(prev => !prev)}
-                    style={{ 
-                      padding: '5px 10px', 
-                      fontSize: 11, 
-                      background: 'rgba(255,255,255,0.1)', 
-                      border: 'none', 
-                      borderRadius: 4, 
-                      color: '#fff', 
-                      cursor: 'pointer' 
-                    }}
-                  >
-                    {showPreviousMonth ? '▼' : '▶'} {previousMonthData.month}/{previousMonthData.year}
-                  </button>
-                )}
-              </div>
-
-              {/* Conseils de gestion */}
-              {showAdvice && (
-                <div style={{ marginTop: 8, padding: 10, background: 'rgba(255,255,255,0.05)', borderRadius: 6, fontSize: 12 }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: 6, color: incomeUsedPercent > 100 ? '#ef4444' : incomeUsedPercent > 80 ? '#f59e0b' : '#10b981' }}>
-                    {incomeUsedPercent > 100 
-                      ? '🚨 Vous dépensez plus que vous gagnez !' 
-                      : incomeUsedPercent > 80 
-                        ? '⚡ Vous approchez de votre limite' 
-                        : '🎉 Excellent ! Vous gérez bien votre budget'}
-                  </div>
-                  <ul style={{ paddingLeft: 16, margin: 0 }}>
-                    {incomeUsedPercent > 100 ? (
-                      <>
-                        <li>Identifiez les dépenses non essentielles à réduire</li>
-                        <li>Reportez les achats non urgents au mois prochain</li>
-                        <li>Cherchez des sources de revenus complémentaires</li>
-                      </>
-                    ) : incomeUsedPercent > 80 ? (
-                      <>
-                        <li>Surveillez vos postes de dépenses cette fin de mois</li>
-                        <li>Évitez les achats impulsifs</li>
-                        <li>Gardez une marge pour les imprévus</li>
-                      </>
-                    ) : (
-                      <>
-                        <li>Continuez ainsi ! Pensez à épargner le surplus</li>
-                        <li>Profitez-en pour constituer un fond d'urgence</li>
-                        <li>Vous pouvez vous faire un petit plaisir raisonnable 🎁</li>
-                      </>
-                    )}
-                  </ul>
-                </div>
-              )}
-
-              {/* Récapitulatif mois précédent (masquable) */}
-              {showPreviousMonth && previousMonthData.hasSalary && (
-                <div style={{ marginTop: 8, padding: 10, background: 'rgba(255,255,255,0.05)', borderRadius: 6, fontSize: 12 }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: 4 }}>📅 Récap {previousMonthData.month}/{previousMonthData.year}</div>
-                  <div>💰 Salaire: <span style={{ color: '#10b981' }}>{formatCurrency(previousMonthData.totalIncomes)}</span></div>
-                  <div>📉 Dépensé: <span style={{ color: '#ef4444' }}>{formatCurrency(previousMonthData.totalExpenses)}</span></div>
-                  <div>📊 Solde: <span style={{ color: previousMonthData.balance >= 0 ? '#10b981' : '#ef4444' }}>{formatCurrency(previousMonthData.balance)}</span></div>
-                  {previousMonthData.totalIncomes > 0 && (
-                    <div style={{ marginTop: 4, opacity: 0.8 }}>
-                      Taux: {Math.round(previousMonthData.totalExpenses / previousMonthData.totalIncomes * 100)}%
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         )}
 
@@ -1244,7 +1091,7 @@ function App() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon" style={{ background: '#1a1a1a', color: '#d4af37', border: '1px solid #d4af37' }}>
+          <div className="stat-icon" style={{ background: '#fef3c7', color: '#f59e0b' }}>
             <Calendar size={28} />
           </div>
           <div className="stat-content">
@@ -1291,11 +1138,6 @@ function App() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
               <h2>{editingExpense ? 'Modifier la dépense' : 'Nouvelle dépense'}</h2>
             <form onSubmit={handleSubmit}>
-              {!balance.hasSalary && (
-                <div style={{ marginBottom: 12, padding: 10, borderRadius: 6, background: '#fff4e5', color: '#8a5a00', border: '1px solid #ffd8a8' }}>
-                  ⚠️ Aucun salaire renseigné pour {selectedMonth}/{selectedYear}. Vous devez d'abord ajouter votre salaire pour ce mois.
-                </div>
-              )}
               <div className="input-group">
                 <label>Montant (FCFA)</label>
                 <input
@@ -1313,7 +1155,7 @@ function App() {
                   const status = getExpenseManagementStatus(formData.amount);
                   const color = status.level === 'good' ? '#16a34a' : status.level === 'warning' ? '#f59e0b' : status.level === 'bad' ? '#dc2626' : '#6b7280';
                   return (
-                    <div style={{ padding: '8px', borderRadius: 6, background: '#1a1a1a', border: `1px solid ${color}` }}>
+                    <div style={{ padding: '8px', borderRadius: 6, background: '#ffffff', border: `1px solid ${color}` }}>
                       <strong style={{ color }}>{status.level === 'good' ? 'Bon' : status.level === 'warning' ? 'Attention' : status.level === 'bad' ? 'Mauvais' : 'Info'}</strong>
                       <div style={{ marginTop: 4 }}>{status.text}</div>
                     </div>
@@ -1356,7 +1198,7 @@ function App() {
               </div>
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={!incomes || incomes.length === 0}>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
                   {editingExpense ? 'Modifier' : 'Ajouter'}
                 </button>
                 <button 
@@ -1393,13 +1235,6 @@ function App() {
                   value={incomeForm.amount}
                   onChange={(e) => setIncomeForm({ ...incomeForm, amount: e.target.value })}
                 />
-              </div>
-              <div className="input-group">
-                <label>Type de revenu</label>
-                <select value={incomeForm.type || 'other'} onChange={(e) => setIncomeForm({ ...incomeForm, type: e.target.value })}>
-                  <option value="salary">Salaire</option>
-                  <option value="other">Autre</option>
-                </select>
               </div>
               <div className="input-group">
                 <label>Description</label>
@@ -1454,28 +1289,20 @@ function App() {
               <button className="btn btn-primary" onClick={() => setShowLoanModal(true)}>Nouveau prêt</button>
             </div>
 
-            {/* Filtrer pour n'afficher que les prêts non soldés */}
-            {(() => {
-              const activeLoans = loans.filter(loan => {
-                const breakdown = calculateInterestAndPrincipalRemaining(loan);
-                // Prêt actif si le restant (intérêts + capital) > 0
-                return (breakdown.interestRemaining + breakdown.principalRemaining) > 0;
-              });
-              
-              return activeLoans.length === 0 ? (
-                <p>Aucun prêt en cours {loans.length > 0 ? `(${loans.length} prêt(s) soldé(s))` : ''}</p>
-              ) : (
-                <ul className="loan-list">
-                  {activeLoans.map(loan => (
-                    <li key={loan.id} className="loan-item">
-                      <div className="loan-main">
-                        <div className="loan-info">
-                          <div className="amount-display">
-                            <strong style={{fontSize: '18px', color: '#2c3e50'}}>{formatCurrency(calculateLoanTotal(loan))}</strong>
-                            <div style={{fontSize: '12px', color: '#7f8c8d', marginTop: '2px'}}>
-                              {loan.description || 'Prêt'}
-                            </div>
+            {loans.length === 0 ? (
+              <p>Aucun prêt enregistré</p>
+            ) : (
+              <ul className="loan-list">
+                {loans.map(loan => (
+                  <li key={loan.id} className="loan-item">
+                    <div className="loan-main">
+                      <div className="loan-info">
+                        <div className="amount-display">
+                          <strong style={{fontSize: '18px', color: '#2c3e50'}}>{formatCurrency(calculateLoanTotal(loan))}</strong>
+                          <div style={{fontSize: '12px', color: '#7f8c8d', marginTop: '2px'}}>
+                            {loan.description || 'Prêt'}
                           </div>
+                        </div>
                         
                         {!hiddenLoanDetails.has(loan.id) && (
                           <>
@@ -1560,8 +1387,7 @@ function App() {
                   </li>
                 ))}
               </ul>
-              );
-            })()}
+            )}
 
             {selectedLoanId && !hiddenLoanDetails.has(selectedLoanId) && (
               <div style={{ marginTop: 12 }}>
@@ -1646,7 +1472,7 @@ function App() {
               {selectedCategoryDetails.category?.icon} Détails - {selectedCategoryDetails.category?.name}
             </h2>
             
-            <div style={{ marginBottom: '16px', padding: '12px', background: '#2a2a2a', border: '1px solid #3a3a3a', borderRadius: '8px', color: '#ffffff' }}>
+            <div style={{ marginBottom: '16px', padding: '12px', background: '#f3f4f6', borderRadius: '8px' }}>
               <strong>Total: {formatCurrency(selectedCategoryDetails.category?.total || 0)}</strong>
               <div style={{ fontSize: '14px', color: '#6b7280', marginTop: '4px' }}>
                 {selectedCategoryDetails.expenses?.length || 0} transaction(s)
@@ -1734,14 +1560,14 @@ function App() {
               const breakdown = calculateInterestAndPrincipalRemaining(repaymentModal.loan);
               return (
                 <div>
-                  <div style={{ marginBottom: '20px', padding: '12px', background: '#2a2a2a', border: '1px solid #3a3a3a', borderRadius: '8px', color: '#ffffff' }}>
+                  <div style={{ marginBottom: '20px', padding: '12px', background: '#f8f9fa', borderRadius: '8px' }}>
                     <div><strong>Informations du prêt :</strong></div>
                     <div>Capital: {formatCurrency(repaymentModal.loan.principal)} · Intérêt: {repaymentModal.loan.interest_rate}%</div>
                     <div>Intérêts restants: {formatCurrency(breakdown.interestRemaining)}</div>
                     <div>Capital restant: {formatCurrency(breakdown.principalRemaining)}</div>
                   </div>
                   
-                  <div style={{ marginBottom: '15px', padding: '12px', background: '#2a2a2a', border: '1px solid #d4af37', borderRadius: '8px', color: '#d4af37' }}>
+                  <div style={{ marginBottom: '15px', padding: '12px', background: '#fff3cd', border: '1px solid #ffeaa7', borderRadius: '8px' }}>
                     <div style={{ fontSize: '14px', color: '#856404' }}>
                       <strong>💡 Information :</strong> Ce remboursement sera automatiquement enregistré comme une dépense dans la catégorie "Remboursement de prêt" et impactera votre solde disponible.
                     </div>
@@ -1774,11 +1600,11 @@ function App() {
                   </div>
                   
                   {(repaymentForm.interestAmount || repaymentForm.principalAmount) && (
-                    <div style={{ marginTop: '15px', padding: '12px', backgroundColor: 'rgba(16, 185, 129, 0.15)', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                      <strong style={{ color: '#10b981' }}>Récapitulatif :</strong>
-                      <div style={{ color: '#e2e8f0', marginTop: '8px' }}>Intérêts: {formatCurrency(Math.max(0, Number(repaymentForm.interestAmount) || 0))}</div>
-                      <div style={{ color: '#e2e8f0' }}>Capital: {formatCurrency(Math.max(0, Number(repaymentForm.principalAmount) || 0))}</div>
-                      <div style={{ color: '#10b981', marginTop: '8px' }}><strong>Total: {formatCurrency(Math.max(0, (Number(repaymentForm.interestAmount) || 0) + (Number(repaymentForm.principalAmount) || 0)))}</strong></div>
+                    <div style={{ marginTop: '15px', padding: '12px', backgroundColor: '#e8f5e8', borderRadius: '8px' }}>
+                      <strong>Récapitulatif :</strong>
+                      <div>Intérêts: {formatCurrency(Math.max(0, Number(repaymentForm.interestAmount) || 0))}</div>
+                      <div>Capital: {formatCurrency(Math.max(0, Number(repaymentForm.principalAmount) || 0))}</div>
+                      <div><strong>Total: {formatCurrency(Math.max(0, (Number(repaymentForm.interestAmount) || 0) + (Number(repaymentForm.principalAmount) || 0)))}</strong></div>
                     </div>
                   )}
                 </div>
@@ -1813,7 +1639,7 @@ function App() {
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <h2 style={{ color: '#dc3545' }}>🔒 Authentification requise</h2>
             
-            <div style={{ marginBottom: '20px', padding: '15px', background: '#2a2a2a', border: '1px solid #d4af37', borderRadius: '8px', color: '#ffffff' }}>
+            <div style={{ marginBottom: '20px', padding: '15px', background: '#fff3cd', border: '1px solid #ffeaa7', borderRadius: '8px' }}>
               <p style={{ margin: 0, fontWeight: 'bold', color: '#856404' }}>
                 ⚠️ Cette action va supprimer TOUTES vos données de façon IRRÉVERSIBLE :
               </p>
@@ -1843,7 +1669,7 @@ function App() {
                   }
                 }}
               />
-              <small style={{ color: '#cccccc', fontSize: '12px', marginTop: '5px', display: 'block' }}>
+              <small style={{ color: '#666', fontSize: '12px', marginTop: '5px', display: 'block' }}>
                 � Utilisez le même mot de passe que pour vous connecter à l'application
               </small>
             </div>
